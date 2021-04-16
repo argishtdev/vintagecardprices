@@ -890,8 +890,12 @@
 
     #listing-pages-list a.paginator {
         float: center;
+        margin-left: 5px;
     }
-</style>
+    #listing-pages-list a.paginator:active,#listing-pages-list a.paginator:focus {
+        background-color: #232323 !important;
+    }
+    </style>
 
 <!-- CARD DETAIL - PURCHASE BID -->
 <div id="listings" class="modal purchase-bids purchase-bids-bug" style="display: none;">
@@ -916,7 +920,7 @@
             <div class="modal-body pd-20" id="listing-box">
             </div>
             <div class="modal-footer">
-                <div id="listing-pages-list" style="float:left; margin-left: 4px;"></div>
+                <div id="listing-pages-list" class="align-items-center d-flex justify-content-center" style="float:left; margin-left: 4px;"></div>
                 <div style="position: absolute;left:5px;">
                 <img height="45" width="95" class="img-fluid" src="../../../template/img/RNO-eBay.gif">
                 </div>
@@ -1362,12 +1366,14 @@ jQuery('#add-wantlist-form').yiiActiveForm([], []);
         jQuery('#listing-pages-list').find('.paginator').removeClass('active');
 
         if (page_num > 1) {
-
+            let nextButton = '';
             for (var i=0;i<page_num;i++) {
-
+                if(i == page_num-1) nextButton = '<button class="btn btn-secondary paginator"> > </button>';
+                let displayAttr = (i>4 && i < page_num-1) ? 'd-none' : '',
+                threeDots = (i === page_num-2) ? '<span class="mx-2">...</span>' : '';
                 // render page link
                 var active_class = current_page == (i+1) || (!current_page && i==0) ? ' active' : '';
-                var btn = '<a href="103492.html#" class="btn btn-secondary paginator page'+ (i+1) + active_class +'" data-page="'+ (i+1) +'">'+ (i+1) +'</a>';
+                var btn = '<a href="103492.html#" class="' + displayAttr + ' btn btn-secondary paginator page'+ (i+1) + active_class +'" data-page="'+ (i+1) +'">'+ (i+1) +'</a>'+threeDots+nextButton;
                 jQuery('#listing-pages-list').append(btn);
 
                 // render page setter for admins
@@ -1377,12 +1383,46 @@ jQuery('#add-wantlist-form').yiiActiveForm([], []);
 
             }
 
+            //next button
+
+            $('#listing-pages-list').find('button.paginator').click(function(e){
+
+                $(".active").next().addClass('active');
+                $(".active").prev().removeClass('active');
+
+                current_page = $(".active").data('page');
+
+                if (jQuery('.live-listing-row-' + current_page).length) {
+                    jQuery('.live-listing-row').hide();
+                    jQuery('.live-listing-row-' + current_page).show();
+                }
+
+                // console.log($('#listing-pages-list > a.active').index('#listing-pages-list > a') , $('#listing-pages-list > a').length - 1);
+
+                if($('#listing-pages-list > a.active').index('#listing-pages-list > a') == (-1)){
+                    $('#listing-pages-list > a.active').removeClass('active');
+                    $('#listing-pages-list > a').last().addClass('active');
+                }
+            });
+
             // page click event
             jQuery('#listing-pages-list').find('.paginator').click(function(e){
                 e.preventDefault();
 
-                jQuery('#listing-pages-list').find('.paginator').removeClass('active');
-                jQuery(this).addClass('active');
+                if(!$(this).is( "button" )){
+                    jQuery('#listing-pages-list').find('.paginator').removeClass('active');
+                    jQuery(this).addClass('active');
+                }
+                
+                //next Button
+
+
+                if($('#listing-pages-list > a.active').index('#listing-pages-list > a') >= $('#listing-pages-list > a').length - 1){
+                    $('#listing-pages-list > button.paginator').attr("disabled", true);
+                }
+                else {
+                    $('#listing-pages-list > button.paginator').attr("disabled", false);
+                }
 
                 // show current page
                 current_page = jQuery(this).data('page');
@@ -1390,6 +1430,27 @@ jQuery('#add-wantlist-form').yiiActiveForm([], []);
                 if (jQuery('.live-listing-row-' + current_page).length) {
                     jQuery('.live-listing-row').hide();
                     jQuery('.live-listing-row-' + current_page).show();
+                }
+
+
+                if ($('#listing-pages-list > a.active').index() <= 2) {
+                    $('#listing-pages-list > a').addClass('d-none');
+                    $('#listing-pages-list > a').slice(0,5).removeClass('d-none');
+                }
+                else if($('#listing-pages-list > a.active').index() >= $('#listing-pages-list > a').length - 4){
+                    $('#listing-pages-list > span.mx-2').hide()
+                    $('#listing-pages-list > a').addClass('d-none');
+                    $('#listing-pages-list > a').slice($('#listing-pages-list > a').length-5).removeClass('d-none');
+                }
+                else {
+                    $('#listing-pages-list > a.paginator').addClass('d-none');
+                    $('#listing-pages-list > a.paginator').last().removeClass('d-none');
+                    $('#listing-pages-list > a.active').removeClass('d-none');
+                    $('#listing-pages-list > a.active').next().removeClass('d-none');
+                    $('#listing-pages-list > a.active').next().next().removeClass('d-none');
+                    $('#listing-pages-list > a.active').prev().removeClass('d-none');
+                    $('#listing-pages-list > a.active').prev().prev().removeClass('d-none');
+                    $('#listing-pages-list > span.mx-2').show();
                 }
 
                 return false;
@@ -1718,7 +1779,12 @@ console.log(fdata)
         }
         // });
 
-    });
+        // data.forEach(e => {
+        //     console.log(e);
+            
+        // });
+
+});
 
 });
 
