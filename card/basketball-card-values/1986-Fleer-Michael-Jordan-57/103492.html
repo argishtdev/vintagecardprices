@@ -909,7 +909,7 @@
     </style>
 
 <!-- CARD DETAIL - PURCHASE BID -->
-<div id="listings" class="modal purchase-bids purchase-bids-bug" style="display: none;">
+<div id="listings" class="modal purchase-bids purchase-bids-bug" tabindex='-1' style="display: none;">
     <div class="modal-dialog" role="document">
         <div class="modal-content tx-size-sm">
             <div class="modal-header pd-x-20" style="display: block;">
@@ -924,6 +924,11 @@
                         <div style="margin: 0 auto; font-size: 1.175rem;">
                             <div style="margin-top: 2px; float:left; margin-left: 12px;" id="modal-graders"></div>
                             <div style="margin-top: 2px; float:left; margin-left: 12px;" id="modal-grades"></div>
+                        </div>
+                    </div>
+                    <div class="dropdown" style="margin-right: 30px;">
+                        <div style="margin: 0 auto; font-size: 1.175rem;">
+                            <div style="margin-top: 2px; float:left; margin-left: 12px;" id="modal-types"></div>
                         </div>
                     </div>
                 </div>
@@ -1561,6 +1566,7 @@ var data = [{"auction_id":"124575516938","price_realized":"23150","grader":"PSA"
 
         if (Object.keys(tmp).length>1 && Object.keys(gg).length>7 && data.length>1){
             $('#modal-graders').html(" <select id='graders' name='graders'><option value='All'>All Graders</option></select>");
+            $('#modal-types').html(" <select id='auction-types' name='auction-types'><option value='All'>All Types</option><option value='Chinese'>Auction</option><option value='FixedPriceItem'>Fixed Price</option></select>");
         }
 
         var first = 1;
@@ -1598,6 +1604,77 @@ var data = [{"auction_id":"124575516938","price_realized":"23150","grader":"PSA"
         }
         var fdata;
 
+
+        // auction filter
+        
+        $('#modal-types').change(function(e){
+            e.preventDefault();
+
+            fdata = jQuery.extend(true, {}, data);
+console.log(fdata)
+
+            jQuery('#listing-box').html("");
+
+            for (i in fdata){
+                if ($( "#auction-types" ).val()=='All') {
+                    continue;
+                }
+                if (fdata[i] === undefined) {
+                    delete fdata[i];
+                }
+
+                if ($( "#auction-types" ).val()) {
+                    if ($( "#auction-types" ).val()=='All') {
+
+                        continue;
+                    }
+                    if (fdata[i].listing_type != $( "#auction-types" ).val()) {
+                        delete fdata[i];
+                    }
+                }
+            }
+
+            if (Object.keys(fdata).length == 0) {
+                jQuery('#listing-box').html("<div style='text-align:center;'>No Auctions available</div>");
+            } else {
+                var per_page = 12;
+                var row_items = [];
+                var m = 0;
+                var grade_values = [];
+                for (i in fdata){
+                    if (fdata[i] === undefined){
+                        continue;
+                    }
+
+                    if (fdata[i].grade) {
+                        grade_values[m] = fdata[i].grade;
+                    }
+
+                    var page_num = Math.ceil((m+1)/per_page);
+                    var new_item_html = getHTML(fdata[i]);
+                    if (row_items.length < 12) {
+                        row_items.push(new_item_html);
+                    }
+
+                    if(Object.keys(fdata).length == 2) var colStyle = 2;
+                    else if(Object.keys(fdata).length == 3) var colStyle = 3;
+                    else var colStyle = 1;
+
+                    $('#listings').removeClass('col-style-1 col-style-2 col-style-3').addClass('col-style-'+ colStyle);
+                    if (row_items.length == 12 || m == Object.keys(fdata).length - 1) {
+                        jQuery('#listing-box').append('<div class="row live-listing-row live-listing-row-'+page_num+'" style="display:none;">'+row_items.join('')+'</div>');
+                        row_items = [];
+                    }
+                    m++;
+
+                }
+
+                renderPaging(m, per_page);
+            }
+        });
+        
+        // auction filter
+        
         $('#modal-graders').change(function(e){
             e.preventDefault();
 
